@@ -1,9 +1,79 @@
-Aplikasi menggambar berbasis kanvas ini memberikan pengalaman yang menyeluruh dan fleksibel bagi pengguna dalam membuat berbagai macam desain grafis. Dengan berbagai fitur yang tersedia, seperti menggambar bebas (freehand), menggambar bentuk geometri (garis, persegi panjang, elips, poligon, dan bintang), serta alat penghapus (eraser), aplikasi ini memungkinkan pengguna untuk mengekspresikan kreativitas mereka secara bebas dan terstruktur.
+# Aplikasi Menggambar Berbasis Kanvas
 
-Fitur Transformasi seperti translate, scale, dan rotate memberikan kemudahan bagi pengguna untuk memodifikasi objek yang telah digambar, baik untuk memindahkan, mengubah ukuran, atau memutar objek sesuai kebutuhan desain. Selain itu, fitur Edit seperti undo dan redo memungkinkan pengguna untuk membatalkan atau mengulang perubahan dengan cepat, sementara fitur delete dan clear memberikan kontrol penuh atas penghapusan objek atau seluruh kanvas.
+Aplikasi menggambar berbasis kanvas ini dirancang untuk memberikan pengalaman menggambar yang intuitif dan fleksibel bagi pengguna. Aplikasi ini menyediakan berbagai alat untuk menggambar, mengedit, dan mengekspor karya seni digital.
 
-Pengaturan Style seperti warna garis, warna isi, dan ukuran garis memungkinkan pengguna untuk menyesuaikan desain dengan preferensi visual mereka, memberikan fleksibilitas dalam setiap karya yang dihasilkan. Aplikasi ini juga mendukung ekspor gambar ke dalam format PNG dan SVG, yang memudahkan pengguna untuk menyimpan dan membagikan karya mereka dalam format yang lebih umum digunakan.
+## Fitur
 
-Fitur Select & Edit memungkinkan pengguna untuk memilih dan mengedit objek yang telah digambar, memberikan kontrol lebih pada pengguna dalam memilih dan memodifikasi elemen desain yang spesifik. Sementara itu, penggunaan Grid Background pada kanvas membantu pengguna untuk menggambar dengan presisi, menjadikan aplikasi ini sangat berguna bagi mereka yang membutuhkan akurasi tinggi dalam desain grafis.
+### 1. **Tools (Alat Menggambar)**
+   - **Freehand**: Menggambar bebas menggunakan mouse.
+   - **Line**: Menggambar garis lurus.
+   - **Rectangle**: Menggambar persegi panjang.
+   - **Ellipse**: Menggambar elips.
+   - **Polygon**: Menggambar poligon dengan jumlah sisi yang dapat dipilih.
+   - **Star**: Menggambar bintang dengan jumlah titik yang dapat disesuaikan.
+   - **Eraser**: Menghapus bagian gambar menggunakan alat penghapus.
+   - **Select**: Memilih objek untuk diedit, dipindahkan, diubah warna, atau dihapus.
 
-Dengan tambahan dukungan keyboard shortcut, aplikasi ini menawarkan kemudahan dalam mengakses fungsi-fungsi utama secara cepat dan efisien, mengoptimalkan pengalaman pengguna. Secara keseluruhan, aplikasi ini menyediakan berbagai alat dan fitur yang sangat berguna untuk menggambar dan mendesain secara digital, serta memungkinkan pengguna untuk menyimpan, mengedit, dan membagikan karya mereka dengan mudah.
+### 2. **Transformasi**
+   - **Translate**: Memindahkan objek terpilih.
+   - **Scale**: Mengubah ukuran objek terpilih.
+   - **Rotate**: Memutar objek terpilih.
+
+### 3. **Edit**
+   - **Undo**: Membatalkan aksi terakhir.
+   - **Redo**: Mengulang aksi yang telah dibatalkan.
+   - **Delete**: Menghapus objek terpilih.
+   - **Clear**: Menghapus seluruh objek pada kanvas.
+
+### 4. **Style (Gaya)**
+   - **Warna Garis**: Mengatur warna garis.
+   - **Warna Isi**: Mengatur warna isi objek.
+   - **Ukuran Garis**: Mengatur ketebalan garis.
+
+### 5. **Export**
+   - **Save PNG**: Menyimpan gambar sebagai file PNG.
+   - **Save SVG**: Menyimpan gambar sebagai file SVG.
+
+### 6. **Keyboard Shortcuts**
+   - **Ctrl + Z**: Undo
+   - **Ctrl + Y**: Redo
+   - **Ctrl + C**: Copy
+   - **Ctrl + V**: Paste
+   - **Ctrl + D**: Duplicate
+   - **Delete**: Hapus objek terpilih
+
+### 7. **Grid Background**
+   - Kanvas dilengkapi dengan grid untuk memudahkan pengguna dalam menggambar dengan presisi.
+
+## Instalasi
+
+Untuk menjalankan aplikasi ini secara lokal, Anda hanya perlu mengunduh file HTML dan membuka file tersebut di browser. Berikut adalah langkah-langkahnya:
+
+1. Unduh atau clone repositori ini.
+2. Buka file `index.html` di browser favorit Anda.
+
+## Teknologi yang Digunakan
+
+- **HTML5**: Digunakan untuk struktur dasar halaman dan kanvas.
+- **CSS**: Digunakan untuk styling dan tata letak.
+- **JavaScript**: Digunakan untuk logika aplikasi dan interaksi dengan kanvas.
+- **Bootstrap**: Digunakan untuk styling antarmuka pengguna (UI) yang responsif.
+
+## Kontribusi
+
+Kami sangat menghargai kontribusi Anda! Jika Anda memiliki ide atau perbaikan, silakan buat **issue** atau **pull request**.
+
+### Langkah-langkah untuk berkontribusi:
+1. Fork repositori ini.
+2. Buat branch baru (`git checkout -b feature/fitur-anda`).
+3. Lakukan perubahan dan komit (`git commit -am 'Menambahkan fitur baru'`).
+4. Push ke branch (`git push origin feature/fitur-anda`).
+5. Buat pull request.
+
+## Lisensi
+
+Proyek ini dilisensikan di bawah lisensi MIT - lihat file [LICENSE](LICENSE) untuk detail lebih lanjut.
+
+---
+
+Terima kasih telah menggunakan aplikasi ini! Kami berharap Anda menikmati pengalaman menggambar digital yang disediakan oleh aplikasi ini.
