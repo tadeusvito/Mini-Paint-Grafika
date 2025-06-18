@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Drawing App</title>
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ENjdO4Dr2bkBIFxQpeoA6VKHr8zWv1pAo7PENhaGNsE5M9Qd4z4l+51I4y3Qm9ct" crossorigin="anonymous">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      background: #f8fafc;
+    }
+    #toolbar {
+      width: 270px;
+      min-width: 220px;
+      padding: 24px 14px 24px 14px;
+      /* Ganti background solid menjadi gradient */
+      background: linear-gradient(135deg, #e0e7ff 0%, #f1f3f6 100%);
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.10);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border-radius: 0 16px 16px 0;
+    }
+    #toolbar .section {
+      margin-bottom: 18px;
+      border-bottom: 1px solid #d1d5db;
+      padding-bottom: 10px;
+    }
+    #toolbar label, #toolbar input, #toolbar select, #toolbar button {
+      font-size: 14px;
+    }
+    #toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    #toolbar input[type="color"] {
+      border: none;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px #0001;
+    }
+    #toolbar input[type="number"] {
+      width: 56px;
+      border-radius: 4px;
+      border: 1px solid #d1d5db;
+      padding: 2px 6px;
+    }
+    #toolbar .row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    #toolbar .row > * {
+      flex: 1;
+    }
+    #toolbar button {
+      padding: 8px 0;
+      border-radius: 6px;
+      border: none;
+      background: #e5e7eb;
+      color: #333;
+      transition: all 0.2s;
+      margin-bottom: 0;
+      font-weight: 500;
+      box-shadow: 0 1px 2px #0001;
+    }
+    #toolbar button.active {
+      background: #0d6efd;
+      color: white;
+    }
+    #toolbar button:hover {
+      background: #dbeafe;
+      color: #0d6efd;
+    }
+    #canvas-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8fafc;
+      flex-direction: column;
+    }
+    canvas {
+      border: 2px solid #b6bbc6;
+      background: #fff;
+      box-shadow: 0 4px 16px #0002;
+      cursor: crosshair;
+      border-radius: 12px;
+    }
+    .zoom-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .zoom-controls button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 20px;
+      border-radius: 6px;
+    }
+    .toolbar-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #22223b;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toolbar" class="shadow-lg bg-white rounded-end-4 p-4 d-flex flex-column gap-3" style="min-width:260px;max-width:320px;">
+    <div class="section mb-4 pb-3 border-bottom">
+      <div class="toolbar-title mb-2 text-primary-emphasis">Tools</div>
+      <div class="row mb-2">
+        <button id="freehandBtn" class="btn btn-outline-primary" onclick="setTool('freehand')">Freehand</button>
+        <button id="lineBtn" class="btn btn-outline-primary" onclick="setTool('line')">Line</button>
+      </div>
+      <div class="row mb-2">
+        <button id="rectangleBtn" class="btn btn-outline-primary" onclick="setTool('rectangle')">Rectangle</button>
+        <button id="ellipseBtn" class="btn btn-outline-primary" onclick="setTool('ellipse')">Ellipse</button>
+      </div>
+      <div class="row mb-2">
+        <button id="polygonBtn" class="btn btn-outline-primary" onclick="setTool('polygon')">Polygon</button>
+        <button id="starBtn" class="btn btn-outline-primary" onclick="setTool('star')">Star</button>
+      </div>
+      <div class="row">
+        <button id="eraserBtn" class="btn btn-outline-danger" onclick="setTool('eraser')">Eraser</button>
+        <button id="selectBtn" class="btn btn-outline-secondary" onclick="setTool('select')">Select</button>
+      </div>
+    </div>
+    <div class="section mb-4 pb-3 border-bottom">
+      <div class="toolbar-title mb-2 text-primary-emphasis">Transform</div>
+      <div class="row">
+        <button id="translateBtn" class="btn btn-outline-info" onclick="translateObject()">Translate</button>
+        <button id="scaleBtn" class="btn btn-outline-info" onclick="scaleObject()">Scale</button>
+        <button id="rotateBtn" class="btn btn-outline-info" onclick="rotateObject()">Rotate</button>
+      </div>
+    </div>
+    <div class="section mb-4 pb-3 border-bottom">
+      <div class="toolbar-title mb-2 text-primary-emphasis">Edit</div>
+      <div class="row mb-2">
+        <button id="undoBtn" class="btn btn-outline-warning" onclick="undo()">Undo</button>
+        <button id="redoBtn" class="btn btn-outline-warning" onclick="redo()">Redo</button>
+      </div>
+      <div class="row">
+        <button id="deleteBtn" class="btn btn-outline-danger" onclick="deleteSelected()">Delete</button>
+        <button id="clearBtn" class="btn btn-outline-danger" onclick="clearCanvas()">Clear</button>
+      </div>
+    </div>
+    <div class="section mb-4 pb-3 border-bottom">
+      <div class="toolbar-title mb-2 text-primary-emphasis">Style</div>
+      <label class="form-label">Warna Garis: <input type="color" id="strokeColorPicker" value="#000000" class="form-control form-control-color d-inline-block ms-2" style="width:2.5rem;height:2.5rem;"></label>
+      <label class="form-label">Warna Isi: <input type="color" id="fillColorPicker" value="#ffffff" class="form-control form-control-color d-inline-block ms-2" style="width:2.5rem;height:2.5rem;"></label>
+      <label class="form-label">Ukuran Garis: <input type="number" id="lineWidthInput" min="1" max="20" value="2" class="form-control d-inline-block ms-2" style="width:3.5rem;"></label>
+    </div>
+    <div class="section mb-4 pb-3 border-bottom">
+      <div class="toolbar-title mb-2 text-primary-emphasis">Export</div>
+      <div class="row">
+        <button id="savePngBtn" class="btn btn-outline-success" onclick="savePNG()">Save PNG</button>
+        <button id="saveSvgBtn" class="btn btn-outline-success" onclick="saveSVG()">Save SVG</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="canvas-container" style="flex-direction:column; display:flex; justify-content:center; align-items:center; height:100vh; background-color:#f8fafc;">
+    <div class="w-100 text-center" style="margin-bottom: 12px;">
+      <h2 class="fw-bold fw-t mb-1 text-end" style="letter-spacing:1px; color:#ff7f00; margin-left: 150px;">Mini Paint App</h2>
+      <div class="fs-6 text-secondary">Nama: <b>Tadeus Vito Gavra Sitanggang</b> | NIM: <b>123220105</b> | Kelas: <b>IF-A</b></div>
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let currentTool = 'pointer';
+    let drawing = false;
+    let startX, startY;
+    let points = [];
+    let selectedShape = null; // Currently selected shape
+    let shapes = [];
+    let freehandPath = [];
+    let eraserSize = 20;
+    let polygonDrawing = false;
+    let polygonTempPoints = [];
+    let polygonSides = 3;
+    const MAX_POLYGON_SIDES = 20;
+    
+    // Tambahan: opsi warna dan ukuran garis
+    let strokeColor = '#000000';
+    let fillColor = '#ffffff00'; // transparan default
+    let lineWidth = 2;
+
+    // Set active tool
+    function setTool(tool) {
+      currentTool = tool;
+      document.querySelectorAll('#toolbar button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`${tool}Btn`).classList.add('active');
+      // Set custom cursor for drawing tools
+      if (["freehand","line","rectangle","ellipse","polygon","eraser","star"].includes(tool)) {
+        canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+      } else if (tool === 'select') {
+        canvas.style.cursor = 'pointer';
+      } else {
+        canvas.style.cursor = 'default';
+      }
+      if (tool === 'polygon') {
+        polygonDrawing = false;
+        polygonTempPoints = [];
+        points = [];
+        // Prompt user for number of sides
+        let sides = parseInt(prompt('Masukkan jumlah sudut polygon (minimal 3, maksimal ' + MAX_POLYGON_SIDES + '):', '5'));
+        if (isNaN(sides) || sides < 3) sides = 3;
+        if (sides > MAX_POLYGON_SIDES) sides = MAX_POLYGON_SIDES;
+        polygonSides = sides;
+        alert('Klik untuk menentukan pusat polygon, lalu klik kedua untuk menentukan radius (bebas sebesar apapun).');
+      }
+    }
+
+    // Draw shapes
+    function drawLine(x1, y1, x2, y2, color, width) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = color || strokeColor;
+      ctx.lineWidth = width || lineWidth;
+      ctx.stroke();
+    }
+
+    function drawRectangle(x1, y1, x2, y2, color, fill, width) {
+      ctx.beginPath();
+      ctx.rect(x1, y1, x2 - x1, y2 - y1);
+      ctx.strokeStyle = color || strokeColor;
+      ctx.lineWidth = width || lineWidth;
+      ctx.fillStyle = fill || fillColor;
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawEllipse(x1, y1, x2, y2, color, fill, width) {
+      ctx.beginPath();
+      ctx.ellipse((x1 + x2) / 2, (y1 + y2) / 2, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = color || strokeColor;
+      ctx.lineWidth = width || lineWidth;
+      ctx.fillStyle = fill || fillColor;
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Update drawEraser agar tidak menghapus grid
+    function drawEraser(path) {
+      if (path.length < 2) return;
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.moveTo(path[0][0], path[0][1]);
+      for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(path[i][0], path[i][1]);
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+      ctx.lineWidth = eraserSize;
+      ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+      drawGrid(); // gambar ulang grid setelah eraser
+      ctx.restore();
+    }
+
+    // Gambar grid default (pindahkan ke paling awal redraw, dan grid tidak terhapus oleh eraser)
+    function drawGrid() {
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-over';
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 25) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 25) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Draw Star
+    function drawStar(cx, cy, outerRadius, innerRadius, points) {
+      let angle = Math.PI / points;
+      ctx.beginPath();
+      for (let i = 0; i < 2 * points; i++) {
+        let r = (i % 2 === 0) ? outerRadius : innerRadius;
+        let x = cx + r * Math.cos(i * angle - Math.PI / 2);
+        let y = cy + r * Math.sin(i * angle - Math.PI / 2);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+    // Redraw canvas
+    function redraw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      shapes.forEach(shape => {
+        ctx.save();
+        ctx.lineWidth = shape.lineWidth || 2;
+        ctx.strokeStyle = shape.strokeColor || '#000';
+        ctx.fillStyle = (shape.fillColor || '#ffffff00');
+        if (shape.type === 'line') {
+          ctx.beginPath();
+          ctx.moveTo(shape.x1, shape.y1);
+          ctx.lineTo(shape.x2, shape.y2);
+          ctx.stroke();
+        }
+        if (shape.type === 'rectangle') {
+          ctx.beginPath();
+          ctx.rect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+          ctx.fill();
+          ctx.stroke();
+        }
+        if (shape.type === 'ellipse') {
+          ctx.beginPath();
+          ctx.ellipse((shape.x1 + shape.x2) / 2, (shape.y1 + shape.y2) / 2, Math.abs(shape.x2 - shape.x1) / 2, Math.abs(shape.y2 - shape.y1) / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+        if (shape.type === 'polygon') {
+          ctx.beginPath();
+          ctx.moveTo(shape.points[0][0], shape.points[0][1]);
+          for (let i = 1; i < shape.points.length; i++) {
+            ctx.lineTo(shape.points[i][0], shape.points[i][1]);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+        if (shape.type === 'star') {
+          drawStar(shape.cx, shape.cy, shape.outerRadius, shape.innerRadius, shape.pointsCount);
+        }
+        if (shape.type === 'freehand') {
+          drawFreehand(shape.path, shape.strokeColor, shape.lineWidth);
+        }
+        if (shape.type === 'eraser') {
+          drawEraser(shape.path);
+        }
+        // Draw selection outline
+        if (shape.selected) {
+          ctx.save();
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([8, 4]);
+          if (shape.type === 'polygon') {
+            ctx.beginPath();
+            ctx.moveTo(shape.points[0][0], shape.points[0][1]);
+            for (let i = 1; i < shape.points.length; i++) {
+              ctx.lineTo(shape.points[i][0], shape.points[i][1]);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          } else if (shape.type === 'star') {
+            drawStar(shape.cx, shape.cy, shape.outerRadius, shape.innerRadius, shape.pointsCount);
+          } else if (shape.type === 'freehand') {
+            drawFreehand(shape.path, 'red', shape.lineWidth + 2);
+          } else if (shape.type === 'line') {
+            drawLine(shape.x1, shape.y1, shape.x2, shape.y2, 'red', shape.lineWidth + 2);
+          } else if (shape.type === 'rectangle') {
+            drawRectangle(shape.x1, shape.y1, shape.x2, shape.y2, 'red', null, shape.lineWidth + 2);
+          } else if (shape.type === 'ellipse') {
+            drawEllipse(shape.x1, shape.y1, shape.x2, shape.y2, 'red', null, shape.lineWidth + 2);
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+        ctx.restore();
+      });
+    }
+
+    // Update drawFreehand agar support warna dan ukuran garis
+    function drawFreehand(path, color, width) {
+      if (path.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(path[0][0], path[0][1]);
+      for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(path[i][0], path[i][1]);
+      }
+      ctx.strokeStyle = color || strokeColor;
+      ctx.lineWidth = width || lineWidth;
+      ctx.stroke();
+    }
+
+    // Save PNG image
+    function savePNG() {
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL();
+      link.download = 'canvas-drawing.png';
+      link.click();
+    }
+
+    // Save SVG image
+    function saveSVG() {
+      let svg = `<svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">`;
+      shapes.forEach(shape => {
+        if (shape.type === 'line') {
+          svg += `<line x1="${shape.x1}" y1="${shape.y1}" x2="${shape.x2}" y2="${shape.y2}" stroke="black" stroke-width="2"/>`;
+        }
+        if (shape.type === 'rectangle') {
+          svg += `<rect x="${shape.x1}" y="${shape.y1}" width="${shape.x2 - shape.x1}" height="${shape.y2 - shape.y1}" stroke="black" stroke-width="2" fill="none"/>`;
+        }
+        if (shape.type === 'ellipse') {
+          svg += `<ellipse cx="${(shape.x1 + shape.x2) / 2}" cy="${(shape.y1 + shape.y2) / 2}" rx="${Math.abs(shape.x2 - shape.x1) / 2}" ry="${Math.abs(shape.y2 - shape.y1) / 2}" stroke="black" stroke-width="2" fill="none"/>`;
+        }
+        if (shape.type === 'polygon') {
+          const pointsStr = shape.points.map(p => `${p[0]},${p[1]}`).join(' ');
+          svg += `<polygon points="${pointsStr}" stroke="black" stroke-width="2" fill="none"/>`;
+        }
+      });
+      svg += '</svg>';
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'drawing.svg';
+      link.click();
+    }
+
+    // Undo/Redo stack
+    let undoStack = [];
+    let redoStack = [];
+
+    // Simpan state awal saat load
+    window.addEventListener('DOMContentLoaded', () => {
+      undoStack = [JSON.stringify(shapes)];
+      redoStack = [];
+    });
+
+    // Simpan state sebelum perubahan pada shapes
+    function pushUndo() {
+      const current = JSON.stringify(shapes);
+      if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== current) {
+        undoStack.push(current);
+        if (undoStack.length > 100) undoStack.shift();
+        redoStack = [];
+      }
+    }
+
+    function undo() {
+      if (undoStack.length > 1) {
+        const current = JSON.stringify(shapes);
+        redoStack.push(current);
+        undoStack.pop();
+        shapes = JSON.parse(undoStack[undoStack.length - 1]);
+        selectedShape = null;
+        redraw();
+      }
+    }
+
+    function redo() {
+      if (redoStack.length > 0) {
+        const next = redoStack.pop();
+        undoStack.push(next);
+        shapes = JSON.parse(next);
+        selectedShape = null;
+        redraw();
+      }
+    }
+
+    // === Panggil pushUndo() sebelum SEMUA perubahan pada shapes, termasuk hapus ===
+    function addShape(shape) {
+      pushUndo();
+      shapes.push(shape);
+      redraw();
+    }
+    function removeSelectedShapes() {
+      pushUndo();
+      shapes = shapes.filter(s => !s.selected);
+      selectedShape = null;
+      redraw();
+    }
+    function clearCanvas() {
+      pushUndo();
+      shapes = [];
+      selectedShape = null;
+      redraw();
+    }
+    function deleteSelected() {
+      pushUndo();
+      shapes = shapes.filter(s => !s.selected);
+      selectedShape = null;
+      redraw();
+    }
+
+    // Copy/Paste/Duplicate via keyboard shortcut
+    let clipboardShape = null;
+    document.addEventListener('keydown', function(e) {
+      // Ctrl+Z undo, Ctrl+Y redo
+      if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+      if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+      // Delete
+      if (e.key === 'Delete') { e.preventDefault(); removeSelectedShapes(); }
+      // Ctrl+C copy
+      if (e.ctrlKey && e.key.toLowerCase() === 'c') {
+        if (selectedShape) {
+          clipboardShape = JSON.parse(JSON.stringify(selectedShape));
+        }
+      }
+      // Ctrl+V paste
+      if (e.ctrlKey && e.key.toLowerCase() === 'v') {
+        if (clipboardShape) {
+          pushUndo();
+          let pasted = JSON.parse(JSON.stringify(clipboardShape));
+          // Offset posisi agar tidak overlap
+          if (pasted.x1 !== undefined) { pasted.x1 += 20; pasted.x2 += 20; }
+          if (pasted.y1 !== undefined) { pasted.y1 += 20; pasted.y2 += 20; }
+          if (pasted.points) pasted.points = pasted.points.map(([x, y]) => [x + 20, y + 20]);
+          if (pasted.path) pasted.path = pasted.path.map(([x, y]) => [x + 20, y + 20]);
+          pasted.selected = false;
+          addShape(pasted);
+        }
+      }
+      // Ctrl+D duplicate
+      if (e.ctrlKey && e.key.toLowerCase() === 'd') {
+        if (selectedShape) {
+          pushUndo();
+          let dupe = JSON.parse(JSON.stringify(selectedShape));
+          if (dupe.x1 !== undefined) { dupe.x1 += 20; dupe.x2 += 20; }
+          if (dupe.y1 !== undefined) { dupe.y1 += 20; dupe.y2 += 20; }
+          if (dupe.points) dupe.points = dupe.points.map(([x, y]) => [x + 20, y + 20]);
+          if (dule.path) dule.path = dule.path.map(([x, y]) => [x + 20, y + 20]);
+          dupe.selected = false;
+          addShape(dupe);
+        }
+      }
+    });
+
+    // Pastikan grid selalu digambar paling awal di redraw
+    function redraw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      shapes.forEach(shape => {
+        ctx.save();
+        ctx.lineWidth = shape.lineWidth || 2;
+        ctx.strokeStyle = shape.strokeColor || '#000';
+        ctx.fillStyle = (shape.fillColor || '#ffffff00');
+        if (shape.type === 'star') {
+          drawStar(shape.cx, shape.cy, shape.outerRadius, shape.innerRadius, shape.pointsCount);
+        }
+        if (shape.type === 'line') {
+          ctx.beginPath();
+          ctx.moveTo(shape.x1, shape.y1);
+          ctx.lineTo(shape.x2, shape.y2);
+          ctx.stroke();
+        }
+        if (shape.type === 'rectangle') {
+          ctx.beginPath();
+          ctx.rect(shape.x1, shape.y1, shape.x2 - shape.x1, shape.y2 - shape.y1);
+          ctx.fill();
+          ctx.stroke();
+        }
+        if (shape.type === 'ellipse') {
+          ctx.beginPath();
+          ctx.ellipse((shape.x1 + shape.x2) / 2, (shape.y1 + shape.y2) / 2, Math.abs(shape.x2 - shape.x1) / 2, Math.abs(shape.y2 - shape.y1) / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+        if (shape.type === 'polygon') {
+          ctx.beginPath();
+          ctx.moveTo(shape.points[0][0], shape.points[0][1]);
+          for (let i = 1; i < shape.points.length; i++) {
+            ctx.lineTo(shape.points[i][0], shape.points[i][1]);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+        if (shape.type === 'freehand') {
+          drawFreehand(shape.path, shape.strokeColor, shape.lineWidth);
+        }
+        if (shape.type === 'eraser') {
+          drawEraser(shape.path);
+        }
+        // Draw selection outline
+        if (shape.selected) {
+          ctx.save();
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([8, 4]);
+          if (shape.type === 'polygon') {
+            ctx.beginPath();
+            ctx.moveTo(shape.points[0][0], shape.points[0][1]);
+            for (let i = 1; i < shape.points.length; i++) {
+              ctx.lineTo(shape.points[i][0], shape.points[i][1]);
+            }
+            ctx.closePath();
+            ctx.stroke();
+          } else if (shape.type === 'star') {
+            drawStar(shape.cx, shape.cy, shape.outerRadius, shape.innerRadius, shape.pointsCount);
+          } else if (shape.type === 'freehand') {
+            drawFreehand(shape.path, 'red', shape.lineWidth + 2);
+          } else if (shape.type === 'line') {
+            drawLine(shape.x1, shape.y1, shape.x2, shape.y2, 'red', shape.lineWidth + 2);
+          } else if (shape.type === 'rectangle') {
+            drawRectangle(shape.x1, shape.y1, shape.x2, shape.y2, 'red', null, shape.lineWidth + 2);
+          } else if (shape.type === 'ellipse') {
+            drawEllipse(shape.x1, shape.y1, shape.x2, shape.y2, 'red', null, shape.lineWidth + 2);
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+        ctx.restore();
+      });
+    }
+
+    // Perbaiki drawPolygon agar bisa menerima warna, fill, dan lineWidth
+    function drawPolygon(points, color, fill, width) {
+      if (points.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i][0], points[i][1]);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = color || strokeColor;
+      ctx.lineWidth = width || lineWidth;
+      ctx.fillStyle = fill || fillColor;
+      ctx.globalAlpha = 0.6;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+    }
+
+    // Fungsi deteksi point in star untuk select
+    function isPointInStar(x, y, star) {
+      // Hitung jarak ke pusat
+      const dx = x - star.cx;
+      const dy = y - star.cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      // Toleransi seleksi: dalam outerRadius + 8px
+      return dist <= (star.outerRadius + 8);
+    }
+
+    // Update isPointInsideShape untuk star
+    function isPointInsideShape(x, y, shape) {
+      if (shape.type === 'star') {
+        return isPointInStar(x, y, shape);
+      }
+      if (shape.type === 'rectangle') {
+        return x >= Math.min(shape.x1, shape.x2) && x <= Math.max(shape.x1, shape.x2) && y >= Math.min(shape.y1, shape.y2) && y <= Math.max(shape.y1, shape.y2);
+      }
+      if (shape.type === 'line') {
+        const tolerance = 5;
+        const dx = shape.x2 - shape.x1;
+        const dy = shape.y2 - shape.y1;
+        const lineLength = Math.sqrt(dx * dx + dy * dy);
+        const distance = Math.abs(dy * x - dx * y + shape.x2 * shape.y1 - shape.y2 * shape.x1) / lineLength;
+        return distance < tolerance;
+      }
+      if (shape.type === 'ellipse') {
+        const cx = (shape.x1 + shape.x2) / 2;
+        const cy = (shape.y1 + shape.y2) / 2;
+        const rx = Math.abs(shape.x2 - shape.x1) / 2;
+        const ry = Math.abs(shape.y2 - shape.y1) / 2;
+        return ((x - cx) ** 2) / (rx ** 2) + ((y - cy) ** 2) / (ry ** 2) <= 1;
+      }
+      if (shape.type === 'polygon') {
+        // Gunakan ray-casting untuk deteksi point in polygon
+        let inside = false;
+        const pts = shape.points;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          if (((pts[i][1] > y) !== (pts[j][1] > y)) && (x < (pts[j][0] - pts[i][0]) * (y - pts[i][1]) / (pts[j][1] - pts[i][1]) + pts[i][0])) {
+            inside = !inside;
+          }
+        }
+        // Jika tidak di dalam, cek juga jika dekat garis polygon (agar mudah select)
+        if (!inside) {
+          const tolerance = 8;
+          for (let i = 0; i < pts.length; i++) {
+            const x1 = pts[i][0], y1 = pts[i][1];
+            const x2 = pts[(i+1)%pts.length][0], y2 = pts[(i+1)%pts.length][1];
+            const dx = x2 - x1, dy = y2 - y1;
+            const lineLength = Math.sqrt(dx * dx + dy * dy);
+            const distance = Math.abs(dy * x - dx * y + x2 * y1 - y2 * x1) / lineLength;
+            if (distance < tolerance) return true;
+          }
+        }
+        return inside;
+      }
+      if (shape.type === 'freehand' || shape.type === 'eraser') {
+        for (let i = 1; i < shape.path.length; i++) {
+          const x1 = shape.path[i-1][0], y1 = shape.path[i-1][1];
+          const x2 = shape.path[i][0], y2 = shape.path[i][1];
+          const dx = x2 - x1, dy = y2 - y1;
+          const lineLength = Math.sqrt(dx * dx + dy * dy);
+          const tolerance = shape.type === 'eraser' ? eraserSize/2 : 5;
+          const distance = Math.abs(dy * x - dx * y + x2 * y1 - y2 * x1) / lineLength;
+          if (distance < tolerance) return true;
+        }
+        return false;
+      }
+      return false;
+    }
+
+    // Handle mouse down event for selecting shapes & drawing
+    canvas.addEventListener('mousedown', (e) => {
+      const x = e.offsetX;
+      const y = e.offsetY;
+      startX = x;
+      startY = y;
+      if (currentTool === 'polygon') {
+        if (!polygonDrawing) {
+          polygonDrawing = true;
+          polygonTempPoints = [[x, y]]; // center
+        }
+        drawing = true;
+      } else if (currentTool === 'freehand' || currentTool === 'eraser') {
+        drawing = true;
+        freehandPath = [[x, y]];
+      } else if (currentTool === 'select') {
+        selectedShape = null;
+        shapes.forEach(shape => shape.selected = false);
+        for (const shape of shapes) {
+          if (isPointInsideShape(x, y, shape)) {
+            shape.selected = true;
+            selectedShape = shape;
+            break;
+          }
+        }
+        redraw();
+      } else if (["line","rectangle","ellipse","star"].includes(currentTool)) {
+        drawing = true;
+      }
+    });
+
+    // Handle mouse move event to update drawing
+    canvas.addEventListener('mousemove', (e) => {
+      if (!drawing && !(currentTool === 'freehand' || currentTool === 'eraser' || (currentTool === 'polygon' && polygonDrawing))) return;
+      const x = e.offsetX;
+      const y = e.offsetY;
+      if (currentTool === 'line') {
+        redraw();
+        drawLine(startX, startY, x, y, strokeColor, lineWidth);
+      } else if (currentTool === 'rectangle') {
+        redraw();
+        drawRectangle(startX, startY, x, y, strokeColor, fillColor, lineWidth);
+      } else if (currentTool === 'ellipse') {
+        redraw();
+        drawEllipse(startX, startY, x, y, strokeColor, fillColor, lineWidth);
+      } else if (currentTool === 'polygon' && polygonDrawing) {
+        redraw();
+        const cx = polygonTempPoints[0][0];
+        const cy = polygonTempPoints[0][1];
+        const dx = x - cx;
+        const dy = y - cy;
+        const radius = Math.sqrt(dx*dx + dy*dy);
+        const angleOffset = -Math.PI/2;
+        let pts = [];
+        for (let i = 0; i < polygonSides; i++) {
+          let angle = angleOffset + i * 2 * Math.PI / polygonSides;
+          pts.push([
+            cx + radius * Math.cos(angle),
+            cy + radius * Math.sin(angle)
+          ]);
+        }
+        ctx.save();
+        drawPolygon(pts, strokeColor, fillColor, lineWidth);
+        ctx.restore();
+      } else if (currentTool === 'freehand' && drawing) {
+        freehandPath.push([x, y]);
+        redraw();
+        drawFreehand(freehandPath);
+      } else if (currentTool === 'eraser' && drawing) {
+        freehandPath.push([x, y]);
+        redraw();
+        drawEraser(freehandPath);
+      } else if (currentTool === 'star' && drawing) {
+        redraw();
+        const cx = startX, cy = startY;
+        const outerRadius = Math.sqrt((x-cx)**2 + (y-cy)**2);
+        const innerRadius = outerRadius * 0.5;
+        drawStar(cx, cy, outerRadius, innerRadius, 5);
+      }
+    });
+
+    // Handle mouse up event for finalizing drawing
+    canvas.addEventListener('mouseup', (e) => {
+      const x = e.offsetX;
+      const y = e.offsetY;
+      if (currentTool === 'polygon' && polygonDrawing) {
+        const cx = polygonTempPoints[0][0];
+        const cy = polygonTempPoints[0][1];
+        const dx = x - cx;
+        const dy = y - cy;
+        const radius = Math.sqrt(dx*dx + dy*dy);
+        const angleOffset = -Math.PI/2;
+        let pts = [];
+        for (let i = 0; i < polygonSides; i++) {
+          let angle = angleOffset + i * 2 * Math.PI / polygonSides;
+          pts.push([
+            cx + radius * Math.cos(angle),
+            cy + radius * Math.sin(angle)
+          ]);
+        }
+        addShape({ type: 'polygon', points: pts, strokeColor, fillColor, lineWidth });
+        polygonDrawing = false;
+        polygonTempPoints = [];
+        drawing = false;
+        redraw();
+      } else if (currentTool === 'freehand' && drawing) {
+        addShape({ type: 'freehand', path: [...freehandPath], strokeColor, lineWidth });
+        drawing = false;
+        freehandPath = [];
+        redraw();
+      } else if (currentTool === 'eraser' && drawing) {
+        addShape({ type: 'eraser', path: [...freehandPath] });
+        drawing = false;
+        freehandPath = [];
+        redraw();
+      } else if (currentTool === 'star' && drawing) {
+        const cx = startX, cy = startY;
+        const outerRadius = Math.sqrt((x-cx)**2 + (y-cy)**2);
+        const innerRadius = outerRadius * 0.5;
+        addShape({ type: 'star', cx, cy, outerRadius, innerRadius, pointsCount: 5, strokeColor, fillColor, lineWidth });
+        drawing = false;
+        redraw();
+      } else if (drawing) {
+        if (currentTool === 'line') {
+          addShape({ type: 'line', x1: startX, y1: startY, x2: x, y2: y, strokeColor, lineWidth });
+        } else if (currentTool === 'rectangle') {
+          addShape({ type: 'rectangle', x1: startX, y1: startY, x2: x, y2: y, strokeColor, fillColor, lineWidth });
+        } else if (currentTool === 'ellipse') {
+          addShape({ type: 'ellipse', x1: startX, y1: startY, x2: x, y2: y, strokeColor, fillColor, lineWidth });
+        }
+        drawing = false;
+        redraw();
+      }
+    });
+
+    // Style changes (undoable)
+    document.getElementById('strokeColorPicker').addEventListener('input', function() {
+      strokeColor = this.value;
+      if (selectedShape) {
+        pushUndo();
+        selectedShape.strokeColor = strokeColor;
+        redraw();
+      }
+    });
+    document.getElementById('fillColorPicker').addEventListener('input', function() {
+      fillColor = this.value+'80';
+      if (selectedShape) {
+        pushUndo();
+        selectedShape.fillColor = fillColor;
+        redraw();
+      }
+    });
+    document.getElementById('lineWidthInput').addEventListener('input', function() {
+      lineWidth = parseInt(this.value);
+      if (selectedShape) {
+        pushUndo();
+        selectedShape.lineWidth = lineWidth;
+        redraw();
+      }
+    });
+
+    // Drag selected shape with select tool
+    let dragOffset = null;
+    canvas.addEventListener('mousedown', (e) => {
+      if (currentTool === 'select' && selectedShape) {
+        const x = e.offsetX, y = e.offsetY;
+        if (isPointInsideShape(x, y, selectedShape)) {
+          dragOffset = { x: x, y: y };
+        }
+      }
+    });
+    canvas.addEventListener('mousemove', (e) => {
+      if (currentTool === 'select' && selectedShape && dragOffset) {
+        const x = e.offsetX, y = e.offsetY;
+        const dx = x - dragOffset.x;
+        const dy = y - dragOffset.y;
+        // Translasi shape sesuai jenis
+        if (selectedShape.type === 'polygon') {
+          selectedShape.points = selectedShape.points.map(([px, py]) => [px + dx, py + dy]);
+        } else if (selectedShape.type === 'star') {
+          selectedShape.cx += dx;
+          selectedShape.cy += dy;
+        } else if (selectedShape.type === 'freehand' || selectedShape.type === 'eraser') {
+          selectedShape.path = selectedShape.path.map(([px, py]) => [px + dx, py + dy]);
+        } else {
+          selectedShape.x1 += dx;
+          selectedShape.y1 += dy;
+          selectedShape.x2 += dx;
+          selectedShape.y2 += dy;
+        }
+        dragOffset = { x, y };
+        redraw();
+      }
+    });
+    canvas.addEventListener('mouseup', (e) => {
+      if (currentTool === 'select' && dragOffset) {
+        dragOffset = null;
+      }
+    });
+
+    // Fitur delete selected
+    function deleteSelected() {
+      shapes = shapes.filter(s => !s.selected);
+      selectedShape = null;
+      redraw();
+    }
+
+    function translateObject() {
+      if (!selectedShape) {
+        alert("Please select a shape to translate.");
+        return;
+      }
+      pushUndo();
+      const dx = parseFloat(prompt("Masukkan jarak translasi X (misal: 50):", "0"));
+      const dy = parseFloat(prompt("Masukkan jarak translasi Y (misal: 50):", "0"));
+      if (isNaN(dx) || isNaN(dy)) return;
+      if (selectedShape.type === 'polygon') {
+        selectedShape.points = selectedShape.points.map(([px, py]) => [px + dx, py + dy]);
+      } else if (selectedShape.type === 'star') {
+        selectedShape.cx += dx;
+        selectedShape.cy += dy;
+      } else if (selectedShape.type === 'freehand' || selectedShape.type === 'eraser') {
+        selectedShape.path = selectedShape.path.map(([px, py]) => [px + dx, py + dy]);
+      } else {
+        selectedShape.x1 += dx;
+        selectedShape.y1 += dy;
+        selectedShape.x2 += dx;
+        selectedShape.y2 += dy;
+      }
+      redraw();
+    }
+
+    function scaleObject() {
+      if (!selectedShape) {
+        alert("Please select a shape to scale.");
+        return;
+      }
+      pushUndo();
+      const factor = parseFloat(prompt("Masukkan faktor skala (misal: 1.5):", "1.2"));
+      if (isNaN(factor) || factor <= 0) return;
+      let cx, cy;
+      if (selectedShape.type === 'polygon') {
+        cx = selectedShape.points.reduce((a, b) => [a[0]+b[0], a[1]+b[1]], [0,0]).map(v=>v/selectedShape.points.length);
+        selectedShape.points = selectedShape.points.map(([px, py]) => [cx[0] + (px-cx[0])*factor, cx[1] + (py-cx[1])*factor]);
+      } else if (selectedShape.type === 'star') {
+        // Skala pusat tetap, radius berubah
+        selectedShape.outerRadius *= factor;
+        selectedShape.innerRadius *= factor;
+      } else if (selectedShape.type === 'freehand' || selectedShape.type === 'eraser') {
+        cx = selectedShape.path.reduce((a, b) => [a[0]+b[0], a[1]+b[1]], [0,0]).map(v=>v/selectedShape.path.length);
+        selectedShape.path = selectedShape.path.map(([px, py]) => [cx[0] + (px-cx[0])*factor, cx[1] + (py-cx[1])*factor]);
+      } else if (selectedShape.type === 'line') {
+        cx = [(selectedShape.x1 + selectedShape.x2)/2, (selectedShape.y1 + selectedShape.y2)/2];
+        selectedShape.x1 = cx[0] + (selectedShape.x1-cx[0])*factor;
+        selectedShape.y1 = cx[1] + (selectedShape.y1-cx[1])*factor;
+        selectedShape.x2 = cx[0] + (selectedShape.x2-cx[0])*factor;
+        selectedShape.y2 = cx[1] + (selectedShape.y2-cx[1])*factor;
+      } else if (selectedShape.type === 'rectangle' || selectedShape.type === 'ellipse') {
+        cx = [(selectedShape.x1 + selectedShape.x2)/2, (selectedShape.y1 + selectedShape.y2)/2];
+        selectedShape.x1 = cx[0] + (selectedShape.x1-cx[0])*factor;
+        selectedShape.y1 = cx[1] + (selectedShape.y1-cx[1])*factor;
+        selectedShape.x2 = cx[0] + (selectedShape.x2-cx[0])*factor;
+        selectedShape.y2 = cx[1] + (selectedShape.y2-cx[1])*factor;
+      }
+      redraw();
+    }
+
+    function rotateObject() {
+      if (!selectedShape) {
+        alert("Please select a shape to rotate.");
+        return;
+      }
+      pushUndo();
+      const deg = parseFloat(prompt("Masukkan sudut rotasi (derajat, misal: 45):", "45"));
+      if (isNaN(deg)) return;
+      const rad = deg * Math.PI / 180;
+      let cx, cy;
+      if (selectedShape.type === 'polygon') {
+        cx = selectedShape.points.reduce((a, b) => [a[0]+b[0], a[1]+b[1]], [0,0]).map(v=>v/selectedShape.points.length);
+        selectedShape.points = selectedShape.points.map(([px, py]) => {
+          const dx = px - cx[0];
+          const dy = py - cx[1];
+          return [cx[0] + dx * Math.cos(rad) - dy * Math.sin(rad), cx[1] + dx * Math.sin(rad) + dy * Math.cos(rad)];
+        });
+      } else if (selectedShape.type === 'star') {
+        // Optional: simpan sudut rotasi jika ingin, atau biarkan tetap
+      } else if (selectedShape.type === 'freehand' || selectedShape.type === 'eraser') {
+        cx = selectedShape.path.reduce((a, b) => [a[0]+b[0], a[1]+b[1]], [0,0]).map(v=>v/selectedShape.path.length);
+        selectedShape.path = selectedShape.path.map(([px, py]) => {
+          const dx = px - cx[0];
+          const dy = py - cx[1];
+          return [cx[0] + dx * Math.cos(rad) - dy * Math.sin(rad), cx[1] + dx * Math.sin(rad) + dy * Math.cos(rad)];
+        });
+      } else {
+        cx = [(selectedShape.x1 + selectedShape.x2)/2, (selectedShape.y1 + selectedShape.y2)/2];
+        const dx1 = selectedShape.x1 - cx[0];
+        const dy1 = selectedShape.y1 - cx[1];
+        const dx2 = selectedShape.x2 - cx[0];
+        const dy2 = selectedShape.y2 - cx[1];
+        selectedShape.x1 = cx[0] + dx1 * Math.cos(rad) - dy1 * Math.sin(rad);
+        selectedShape.y1 = cx[1] + dx1 * Math.sin(rad) + dy1 * Math.cos(rad);
+        selectedShape.x2 = cx[0] + dx2 * Math.cos(rad) - dy2 * Math.sin(rad);
+        selectedShape.y2 = cx[1] + dx2 * Math.sin(rad) + dy2 * Math.cos(rad);
+      }
+      redraw();
+    }
+
+  </script>
+
+</body>
+</html>
